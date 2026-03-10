@@ -40,23 +40,4 @@ def parse_input(cnf_file):
 class Solver:
     def __init__(self, cnf):
         self.cnf = cnf
-        self.assignment = []
-        self.var_to_clause = []
-
-    # assign random values to variables
-    def assign(self):
-        self.assignment = [None] + [random.getrandbits(1) for _ in range(self.cnf.variables)]
-
-    def evaluate(self):
-        return sum(
-            any((literal > 0) == self.assignment[abs(literal)] for literal in clause)
-            for clause in self.cnf.clauses
-        )
-
-    def initialize_state():
-
-
-        
-
     
-
