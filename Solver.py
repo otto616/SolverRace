@@ -46,9 +46,10 @@ class Solver:
         self.unsatisfied = set() 
 
     def initialize_state(self):
-        cnf = CNF()
 
+        # variable which stores the assignments True (1) or False (0) of each variable
         self.assignment = [None] + [random.getrandbits(1) for _ in range(self.cnf.variables)]
+        # In here we store where each variable appears
         self.var_to_clause = [[] for _ in range(self.cnf.variables + 1)]
         self.true_lit_count = [0] * self.cnf.num_clauses
         self.unsatisfied = set()
@@ -63,7 +64,7 @@ class Solver:
                 
                 # Add index of the clause in which appears that variable
                 # If later we need to change variables true/false, we don't want to iterate all again to know where some variable is
-                self.var_to_clause[var].append(clause_index)
+                self.var_to_clause[var].append((clause_index, lit))
 
                 # Check if literal satisfies the clause with the current rand. assignation
                 # Assignments is full of 0s and 1s so if a literal is positive and it is assigned to positive (1) it will satisfy
@@ -78,35 +79,35 @@ class Solver:
                 self.unsatisfied.add(clause_index)
 
 
-
+    # This function calculates how many clauses are one flip away from being unsat, by the given variable
     def calculate_break_count(self, var):
-        """
-        Calcula quantes clàusules que ARA MATEIX estan satisfetes 
-        es trencarien si canviem el valor d'aquesta 'var'.
-        (Pista: Només has de mirar les clàusules a self.var_to_clause[var] 
-        que tinguin self.true_lit_count == 1 i on la 'var' sigui la que ho fa cert).
-        Retorna un número enter.
-        """
         breaks = 0
-
-        for i self.var_to_clause[var]:
-
-            if self.true_lit_count[i] == 0:
-                # Flipping it will make it true necessarily
-                breaks -= 1 
+        var_value = self.assignment[var]
+        # For each clause where this var appears, we search for how many will we unsat if we flip it's value
+        # We ignore if we repair any clause with the flip (walksat strategy)
+        for i, literal in self.var_to_clause[var]:
+            if self.true_lit_count[i] == 1:
+                if (literal > 0) == var_value:
+                    breaks += 1
+        
+        return breaks
+        
+        
+        # inefficient version
+        for i in self.var_to_clause[var]:
 
             if self.true_lit_count[i] == 1:
 
-                test_clause = cnf.clauses[i]
+                test_clause = self.cnf.clauses[i]
 
                 for lit in test_clause:
-
                     if var == abs(lit):
                         if (lit > 0) == self.assignment[var]:
                             breaks += 1
-            
+                            break # A var only appears once in a clause
 
-                    
+        return breaks
+            
 
     def pick_variable_to_flip(self, clause_idx, walk_probability=0.5):
         """
