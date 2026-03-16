@@ -110,15 +110,54 @@ class Solver:
             
 
     def pick_variable_to_flip(self, clause_idx, walk_probability=0.5):
-        """
-        Lògica de WalkSAT per escollir quina variable canviar dins d'una clàusula trencada:
-        1. Mira les variables de la clàusula a l'índex 'clause_idx'.
-        2. Si alguna variable té un break_count == 0, escull-la immediatament.
-        3. Si no, amb probabilitat 'walk_probability', escull una variable a l'atzar.
-        4. Si no, escull la variable que tingui el break_count més baix.
-        Retorna l'índex (enter) de la variable escollida.
-        """
-        pass
+
+        clause = self.cnf.clauses[clause_idx]
+        
+        min_damage = float('inf')
+        best_var = None
+        
+        for literal in clause:
+            abs_var = abs(literal)
+            damage = self.calculate_break_count(abs_var)
+            
+            # If there is a variable that won't break any clause, we select it
+            if damage == 0:
+                return abs_var
+                
+            # Else we store the variable which makes less "damage"
+            if damage < min_damage:
+                min_damage = damage
+                best_var = abs_var
+                
+        # Random Walk 
+        if random.random() < walk_probability:
+            # If we have to do the random walk, we choose a random var from the current clause
+            return abs(random.choice(clause))
+            
+        # Else we return the Greedy
+        return best_var
+
+        # Inefficient version
+        breakings = {}
+
+        for variable in self.cnf.clauses[clause_idx]:
+
+            abs_var = abs(variable)
+            damage = self.calculate_break_count(abs_var)
+
+            if damage == 0:
+                return abs_var
+        
+            else:
+                breakings[abs_var] = damage
+            
+        if (random.random() < walk_probability):
+            return random.choice(list(breakings.keys()))
+                
+        else:
+            return min(breakings, key = breakings.get)
+
+
 
     def flip(self, var):
         """
