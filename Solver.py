@@ -137,9 +137,9 @@ class Solver:
         # Else we return the Greedy
         return best_var
 
+
         # Inefficient version
         breakings = {}
-
         for variable in self.cnf.clauses[clause_idx]:
 
             abs_var = abs(variable)
@@ -147,16 +147,13 @@ class Solver:
 
             if damage == 0:
                 return abs_var
-        
             else:
                 breakings[abs_var] = damage
             
         if (random.random() < walk_probability):
-            return random.choice(list(breakings.keys()))
-                
+            return random.choice(list(breakings.keys()))  
         else:
             return min(breakings, key = breakings.get)
-
 
 
     def flip(self, var):
@@ -167,7 +164,27 @@ class Solver:
         3. Si una clàusula passa a true_lit_count == 0, afegeix-la a self.unsatisfied.
         4. Si una clàusula passa de 0 a 1, treu-la de self.unsatisfied.
         """
-        pass
+
+        # once we've chosen which variable to flip, we do it (if it was 0, now will be 1, and otherwise)
+        self.assignment[var] = 1 - self.assignment[var]
+
+        # we iterate only the clauses in which that variable is
+        for clause_idx, lit in self.var_to_clause[var]:
+
+            # if the flip made the variable true, we update the true_lit_count in that clause
+            # if with this flip it passes from unsat to sat (no more 0 true vars in the clause)
+            # we remove it from the unsatisfied clauses
+            if (lit > 0) == self.assignment[var]:
+                self.true_lit_count[clause_idx] += 1
+                if self.true_lit_count[clause_idx] == 1:
+                    self.unsatisfied.remove(clause_idx)
+            
+            # otherwise, we do the opposite process
+            else:
+                self.true_lit_count[clause_idx] -= 1
+                if self.true_lit_count[clause_idx] == 0:
+                    self.unsatisfied.add(clause_idx)
+
 
     def solve(self, max_flips=100000, max_restarts=10):
         """
