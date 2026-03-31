@@ -45,6 +45,7 @@ class Solver:
         self.true_lit_count = [] 
         self.unsatisfied = set() 
 
+
     def initialize_state(self):
 
         # variable which stores the assignments True (1) or False (0) of each variable
@@ -91,22 +92,6 @@ class Solver:
                     breaks += 1
         
         return breaks
-        
-        
-        # inefficient version
-        for i in self.var_to_clause[var]:
-
-            if self.true_lit_count[i] == 1:
-
-                test_clause = self.cnf.clauses[i]
-
-                for lit in test_clause:
-                    if var == abs(lit):
-                        if (lit > 0) == self.assignment[var]:
-                            breaks += 1
-                            break # A var only appears once in a clause
-
-        return breaks
             
 
     def pick_variable_to_flip(self, clause_idx, walk_probability=0.5):
@@ -138,24 +123,6 @@ class Solver:
         return best_var
 
 
-        # Inefficient version
-        breakings = {}
-        for variable in self.cnf.clauses[clause_idx]:
-
-            abs_var = abs(variable)
-            damage = self.calculate_break_count(abs_var)
-
-            if damage == 0:
-                return abs_var
-            else:
-                breakings[abs_var] = damage
-            
-        if (random.random() < walk_probability):
-            return random.choice(list(breakings.keys()))  
-        else:
-            return min(breakings, key = breakings.get)
-
-
     def flip(self, var):
 
         # once we've chosen which variable to flip, we do it (if it was 0, now will be 1, and otherwise)
@@ -180,22 +147,23 @@ class Solver:
 
 
     def solve(self, max_flips=100000, max_restarts=10):
-    for _ in range(max_restarts):
-        self.initialize_state()
+        for _ in range(max_restarts):
+            self.initialize_state()
 
-        for _ in range(max_flips):
+            for _ in range(max_flips):
+                if len(self.unsatisfied) == 0:
+                    return True
+
+                clause_idx = random.choice(tuple(self.unsatisfied))
+                var = self.pick_variable_to_flip(clause_idx)
+                self.flip(var)
+
+            # per si la solució es troba just al final dels flips
             if len(self.unsatisfied) == 0:
                 return True
 
-            clause_idx = random.choice(tuple(self.unsatisfied))
-            var = self.pick_variable_to_flip(clause_idx)
-            self.flip(var)
+        return False
 
-        # per si la solució es troba just al final dels flips
-        if len(self.unsatisfied) == 0:
-            return True
-
-    return False
 
 def print_solution(assignment):
     print("s SATISFIABLE")
@@ -206,6 +174,7 @@ def print_solution(assignment):
         else:
             lits.append(str(-var))
     print("v " + " ".join(lits) + " 0")
+
 
 if __name__ == '__main__':
     # 1. Comprovar que ens passen el fitxer per arguments (sys.argv)
