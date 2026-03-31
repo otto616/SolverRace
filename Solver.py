@@ -1,4 +1,4 @@
-import sys, os, random
+import sys, random
 
 # data structure to store the CNF
 class CNF:
