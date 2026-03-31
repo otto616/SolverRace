@@ -180,28 +180,32 @@ class Solver:
 
 
     def solve(self, max_flips=100000, max_restarts=10):
-        """
-        El bucle principal de l'algorisme.
-        Per 'max_restarts' vegades:
-            Crida self.initialize_state()
-            Per 'max_flips' vegades:
-                Si len(self.unsatisfied) == 0:
-                    Has trobat la solució! Retorna True.
-                Agafa una clàusula aleatòria de self.unsatisfied.
-                var = self.pick_variable_to_flip(clausula)
-                self.flip(var)
-        Si s'acaben els restarts i no hi ha solució, retorna False.
-        """
-        pass
+    for _ in range(max_restarts):
+        self.initialize_state()
+
+        for _ in range(max_flips):
+            if len(self.unsatisfied) == 0:
+                return True
+
+            clause_idx = random.choice(tuple(self.unsatisfied))
+            var = self.pick_variable_to_flip(clause_idx)
+            self.flip(var)
+
+        # per si la solució es troba just al final dels flips
+        if len(self.unsatisfied) == 0:
+            return True
+
+    return False
 
 def print_solution(assignment):
-    """
-    Imprimeix el resultat exactament com demana la pràctica:
-    s SATISFIABLE
-    v 1 -2 3 -4 ... 0
-    (Recorda transformar els 0s i 1s de l'assignació en variables positives i negatives).
-    """
-    pass
+    print("s SATISFIABLE")
+    lits = []
+    for var in range(1, len(assignment)):
+        if assignment[var] == 1:
+            lits.append(str(var))
+        else:
+            lits.append(str(-var))
+    print("v " + " ".join(lits) + " 0")
 
 if __name__ == '__main__':
     # 1. Comprovar que ens passen el fitxer per arguments (sys.argv)
