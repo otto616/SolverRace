@@ -157,13 +157,6 @@ class Solver:
 
 
     def flip(self, var):
-        """
-        1. Inverteix el valor de self.assignment[var] (de 0 a 1 o d'1 a 0).
-        2. Recorre self.var_to_clause[var] i actualitza el self.true_lit_count 
-           de cada clàusula afectada.
-        3. Si una clàusula passa a true_lit_count == 0, afegeix-la a self.unsatisfied.
-        4. Si una clàusula passa de 0 a 1, treu-la de self.unsatisfied.
-        """
 
         # once we've chosen which variable to flip, we do it (if it was 0, now will be 1, and otherwise)
         self.assignment[var] = 1 - self.assignment[var]
